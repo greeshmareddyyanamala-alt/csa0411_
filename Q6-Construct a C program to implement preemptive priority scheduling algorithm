@@ -1,0 +1,80 @@
+#include <stdio.h>
+
+#define MAX 100
+
+struct Process {
+    int pid;
+    int arrivalTime;
+    int burstTime;
+    int remainingTime;
+    int priority;
+    int completionTime;
+    int waitingTime;
+    int turnaroundTime;
+    int isCompleted;
+};
+
+int main() {
+    int n, time = 0, completed = 0;
+    struct Process p[MAX];
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    // Input process details
+    for (int i = 0; i < n; i++) {
+        p[i].pid = i + 1;
+        printf("Enter arrival time for Process %d: ", p[i].pid);
+        scanf("%d", &p[i].arrivalTime);
+        printf("Enter burst time for Process %d: ", p[i].pid);
+        scanf("%d", &p[i].burstTime);
+        printf("Enter priority for Process %d (lower number = higher priority): ", p[i].pid);
+        scanf("%d", &p[i].priority);
+        p[i].remainingTime = p[i].burstTime;
+        p[i].isCompleted = 0;
+    }
+
+    while (completed != n) {
+        int idx = -1;
+        int highestPriority = 9999;
+
+        // Find process with highest priority at current time
+        for (int i = 0; i < n; i++) {
+            if (p[i].arrivalTime <= time && p[i].isCompleted == 0 && p[i].priority < highestPriority && p[i].remainingTime > 0) {
+                highestPriority = p[i].priority;
+                idx = i;
+            }
+        }
+
+        if (idx != -1) {
+            p[idx].remainingTime--;
+            time++;
+
+            if (p[idx].remainingTime == 0) {
+                p[idx].completionTime = time;
+                p[idx].turnaroundTime = p[idx].completionTime - p[idx].arrivalTime;
+                p[idx].waitingTime = p[idx].turnaroundTime - p[idx].burstTime;
+                p[idx].isCompleted = 1;
+                completed++;
+            }
+        } else {
+            time++; // No process is ready, idle time
+        }
+    }
+
+    // Output results
+    float totalWT = 0, totalTAT = 0;
+    printf("\nPreemptive Priority Scheduling:\n");
+    printf("PID\tArrival\tBurst\tPriority\tWaiting\tTurnaround\n");
+
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t%d\t%d\t\t%d\t%d\n", p[i].pid, p[i].arrivalTime, p[i].burstTime, p[i].priority, p[i].waitingTime, p[i].turnaroundTime);
+        totalWT += p[i].waitingTime;
+        totalTAT += p[i].turnaroundTime;
+    }
+
+    printf("\nAverage Waiting Time: %.2f", totalWT / n);
+    printf("\nAverage Turnaround Time: %.2f\n", totalTAT / n);
+
+    return 0;
+}
